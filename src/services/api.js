@@ -5,7 +5,7 @@ import router from '@/router/index';
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 const defaultAxios = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://http://51.20.8.46:8000/api/v1',
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
