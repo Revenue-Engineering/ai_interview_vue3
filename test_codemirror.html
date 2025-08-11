@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeMirror Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .editor-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>CodeMirror Test</h1>
+
+        <div class="controls">
+            <button onclick="changeLanguage('javascript')">JavaScript</button>
+            <button onclick="changeLanguage('python')">Python</button>
+            <button onclick="changeLanguage('cpp')">C++</button>
+            <button onclick="getCode()">Get Code</button>
+            <button onclick="runCode()">Run Code</button>
+        </div>
+
+        <div class="status" id="status">Loading CodeMirror...</div>
+
+        <div id="editor" class="editor-container"></div>
+    </div>
+
+    <script type="module">
+        import { EditorView } from '@codemirror/view'
+        import { EditorState } from '@codemirror/state'
+        import { javascript } from '@codemirror/lang-javascript'
+        import { python } from '@codemirror/lang-python'
+        import { cpp } from '@codemirror/lang-cpp'
+        import { oneDark } from '@codemirror/theme-one-dark'
+        import { keymap } from '@codemirror/view'
+        import { indentWithTab } from '@codemirror/commands'
+
+        let editor = null
+        let currentLanguage = 'javascript'
+
+        const languageExtensions = {
+            javascript: javascript(),
+            python: python(),
+            cpp: cpp()
+        }
+
+        const languageTemplates = {
+            javascript: `function solution(input) {
+    // Your code here
+    return input;
+}`,
+            python: `def solution(input):
+    # Your code here
+    return input`,
+            cpp: `#include <iostream>
+#include <string>
+using namespace std;
+
+string solution(string input) {
+    // Your code here
+    return input;
+}`
+        }
+
+        function createEditor(language = 'javascript') {
+            const extensions = [
+                oneDark,
+                languageExtensions[language] || languageExtensions.javascript,
+                keymap.of([indentWithTab]),
+                EditorView.lineWrapping,
+                EditorState.allowMultipleSelections.of(false)
+            ]
+
+            const state = EditorState.create({
+                doc: languageTemplates[language] || languageTemplates.javascript,
+                extensions
+            })
+
+            editor = new EditorView({
+                state,
+                parent: document.getElementById('editor')
+            })
+
+            document.getElementById('status').textContent = `CodeMirror loaded with ${language} support!`
+        }
+
+        function changeLanguage(language) {
+            if (editor) {
+                const newValue = languageTemplates[language] || languageTemplates.javascript
+                const transaction = editor.state.update({
+                    changes: {
+                        from: 0,
+                        to: editor.state.doc.length,
+                        insert: newValue
+                    }
+                })
+                editor.dispatch(transaction)
+                currentLanguage = language
+                document.getElementById('status').textContent = `Language changed to ${language}`
+            }
+        }
+
+        function getCode() {
+            if (editor) {
+                const code = editor.state.doc.toString()
+                document.getElementById('status').textContent = 'Current Code:\n' + code
+            }
+        }
+
+        function runCode() {
+            if (editor) {
+                const code = editor.state.doc.toString()
+                document.getElementById('status').textContent = `Running ${currentLanguage} code...\n${code}`
+            }
+        }
+
+        // Initialize editor
+        createEditor()
+
+        // Make functions globally available
+        window.changeLanguage = changeLanguage
+        window.getCode = getCode
+        window.runCode = runCode
+    </script>
+</body>
+
+</html>

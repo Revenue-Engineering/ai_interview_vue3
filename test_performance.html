@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .editor-container {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .controls {
+            margin: 10px 0;
+        }
+
+        button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Performance Test - Lightweight Code Editor</h1>
+
+        <div class="test-section">
+            <h3>Tab Switching Test</h3>
+            <div class="controls">
+                <button onclick="switchTab('question')">Question Tab</button>
+                <button onclick="switchTab('editor')">Editor Tab</button>
+                <button onclick="testTyping()">Test Typing</button>
+                <button onclick="testCopyPaste()">Test Copy/Paste</button>
+            </div>
+            <div class="status" id="status">Ready for testing...</div>
+        </div>
+
+        <div class="test-section">
+            <div id="questionTab" class="editor-container" style="display: block;">
+                <h4>Question Display</h4>
+                <p>This simulates the question tab content.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
+                    et dolore magna aliqua.</p>
+            </div>
+
+            <div id="editorTab" class="editor-container" style="display: none;">
+                <div style="height: 100%; display: flex; flex-direction: column;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0;">Code Editor</h4>
+                        <select id="languageSelect" onchange="changeLanguage()">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="cpp">C++</option>
+                        </select>
+                    </div>
+                    <textarea id="codeEditor"
+                        style="flex: 1; font-family: monospace; font-size: 14px; padding: 10px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #333; resize: none;"
+                        placeholder="// Write your code here...">function solution(input) {
+    // Your code here
+    return input;
+}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'question';
+        let performanceData = {
+            tabSwitches: 0,
+            typingTests: 0,
+            copyPasteTests: 0,
+            startTime: Date.now()
+        };
+
+        function switchTab(tab) {
+            const startTime = performance.now();
+
+            // Hide all tabs
+            document.getElementById('questionTab').style.display = 'none';
+            document.getElementById('editorTab').style.display = 'none';
+
+            // Show selected tab
+            if (tab === 'question') {
+                document.getElementById('questionTab').style.display = 'block';
+            } else {
+                document.getElementById('editorTab').style.display = 'block';
+            }
+
+            currentTab = tab;
+            performanceData.tabSwitches++;
+
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+
+            updateStatus(`Switched to ${tab} tab in ${duration.toFixed(2)}ms (Total switches: ${performanceData.tabSwitches})`);
+        }
+
+        function testTyping() {
+            const editor = document.getElementById('codeEditor');
+            const startTime = performance.now();
+
+            // Simulate typing
+            const testCode = `function testFunction() {
+    console.log("Hello World");
+    return "test";
+}`;
+
+            editor.value = testCode;
+            editor.focus();
+
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            performanceData.typingTests++;
+
+            updateStatus(`Typing test completed in ${duration.toFixed(2)}ms (Total tests: ${performanceData.typingTests})`);
+        }
+
+        function testCopyPaste() {
+            const editor = document.getElementById('codeEditor');
+            const startTime = performance.now();
+
+            // Simulate copy/paste
+            const testCode = `function complexFunction(input) {
+    // This is a complex function
+    let result = 0;
+    for (let i = 0; i < input.length; i++) {
+        result += input[i];
+    }
+    return result;
+}`;
+
+            editor.value = testCode;
+
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            performanceData.copyPasteTests++;
+
+            updateStatus(`Copy/paste test completed in ${duration.toFixed(2)}ms (Total tests: ${performanceData.copyPasteTests})`);
+        }
+
+        function changeLanguage() {
+            const language = document.getElementById('languageSelect').value;
+            const editor = document.getElementById('codeEditor');
+
+            const templates = {
+                javascript: `function solution(input) {
+    // Your JavaScript code here
+    return input;
+}`,
+                python: `def solution(input):
+    # Your Python code here
+    return input`,
+                cpp: `#include <iostream>
+#include <string>
+using namespace std;
+
+string solution(string input) {
+    // Your C++ code here
+    return input;
+}`
+            };
+
+            editor.value = templates[language] || templates.javascript;
+            updateStatus(`Language changed to ${language}`);
+        }
+
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            const elapsed = ((Date.now() - performanceData.startTime) / 1000).toFixed(1);
+            status.innerHTML = `${message}<br><small>Elapsed time: ${elapsed}s | Tab switches: ${performanceData.tabSwitches} | Typing tests: ${performanceData.typingTests} | Copy/paste tests: ${performanceData.copyPasteTests}</small>`;
+        }
+
+        // Initialize
+        updateStatus('Performance test ready. Click buttons to test functionality.');
+    </script>
+</body>
+
+</html>
